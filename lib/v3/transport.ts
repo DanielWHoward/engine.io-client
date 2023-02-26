@@ -2,14 +2,8 @@
  * Module dependencies.
  */
 
-var parser = require('engine.io-parser');
-var Emitter = require('component-emitter');
-
-/**
- * Module exports.
- */
-
-module.exports = Transport;
+import parser from "./engine.io-parser";
+import Emitter from "./component-emitter";
 
 /**
  * Transport abstract constructor.
@@ -64,7 +58,7 @@ Emitter(Transport.prototype);
  */
 
 Transport.prototype.onError = function (msg, desc) {
-  var err = new Error(msg);
+  var err: any = new Error(msg);
   err.type = 'TransportError';
   err.description = desc;
   this.emit('error', err);
@@ -158,3 +152,7 @@ Transport.prototype.onClose = function () {
   this.readyState = 'closed';
   this.emit('close');
 };
+
+export {
+  Transport,
+}

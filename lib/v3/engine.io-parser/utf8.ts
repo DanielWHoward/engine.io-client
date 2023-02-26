@@ -203,8 +203,10 @@ function utf8decode(byteString, opts) {
 	return ucs2encode(codePoints);
 }
 
-module.exports = {
-	version: '2.1.2',
+const version = '2.1.2';
+
+export default {
+	version,
 	encode: utf8encode,
 	decode: utf8decode
 };

@@ -5,7 +5,7 @@
  * @api public
  */
 
-module.exports = function(arraybuffer, start, end) {
+export default function(arraybuffer, start=undefined, end=undefined) {
   var bytes = arraybuffer.byteLength;
   start = start || 0;
   end = end || bytes;

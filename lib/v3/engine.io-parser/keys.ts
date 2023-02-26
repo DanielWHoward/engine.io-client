@@ -6,7 +6,7 @@
  * @api private
  */
 
-module.exports = Object.keys || function keys (obj){
+export default Object.keys || function keys (obj){
   var arr = [];
   var has = Object.prototype.hasOwnProperty;
 

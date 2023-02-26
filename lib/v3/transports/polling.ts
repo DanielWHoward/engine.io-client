@@ -2,26 +2,22 @@
  * Module dependencies.
  */
 
-var Transport = require('../transport');
-var parseqs = require('parseqs');
-var parser = require('engine.io-parser');
-var inherit = require('component-inherit');
-var yeast = require('yeast');
-var debug = require('debug')('engine.io-client:polling');
-
-/**
- * Module exports.
- */
-
-module.exports = Polling;
+import { Transport } from "../transport";
+import parseqs from "parseqs";
+import parser from "../engine.io-parser";
+import inherit from '../component-inherit';
+import yeast from "yeast";
+import debugModule from 'debug';
+var debug = debugModule("engine.io-client:polling");
 
 /**
  * Is XHR2 supported?
  */
 
+//var XMLHttpRequest = require('xmlhttprequest-ssl');
+import XMLHttpRequest from "../xmlhttprequest";
 var hasXHR2 = (function () {
-  var XMLHttpRequest = require('xmlhttprequest-ssl');
-  var xhr = new XMLHttpRequest({ xdomain: false });
+  var xhr = XMLHttpRequest({ xdomain: false });
   return null != xhr.responseType;
 })();
 
@@ -242,4 +238,8 @@ Polling.prototype.uri = function () {
 
   var ipv6 = this.hostname.indexOf(':') !== -1;
   return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
+};
+
+export {
+  Polling as default,
 };

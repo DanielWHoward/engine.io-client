@@ -2,19 +2,21 @@
  * Module dependencies.
  */
 
-var Transport = require('../transport');
-var parser = require('engine.io-parser');
-var parseqs = require('parseqs');
-var inherit = require('component-inherit');
-var yeast = require('yeast');
-var debug = require('debug')('engine.io-client:websocket');
+import { Transport } from "../transport";
+import { encodePacket, encodePayload, decodePacket, decodePayload } from ".,/../engine.io-parser";
+const parser = { encodePacket, encodePayload, decodePacket, decodePayload };
+import parseqs from "parseqs";
+import inherit from '../component-inherit';
+import yeast from "yeast";
+import debugModule from 'debug';
+var debug = debugModule("engine.io-client:websocket");
 
 var BrowserWebSocket, NodeWebSocket;
 
 if (typeof WebSocket !== 'undefined') {
   BrowserWebSocket = WebSocket;
 } else if (typeof self !== 'undefined') {
-  BrowserWebSocket = self.WebSocket || self.MozWebSocket;
+  BrowserWebSocket = self.WebSocket;// || self.MozWebSocket;
 } else {
   try {
     NodeWebSocket = require('ws');
@@ -28,12 +30,6 @@ if (typeof WebSocket !== 'undefined') {
  */
 
 var WebSocketImpl = BrowserWebSocket || NodeWebSocket;
-
-/**
- * Module exports.
- */
-
-module.exports = WS;
 
 /**
  * WebSocket transport constructor.
@@ -90,7 +86,7 @@ WS.prototype.doOpen = function () {
 
   var uri = this.uri();
   var protocols = this.protocols;
-  var opts = {
+  var opts: any = {
     agent: this.agent,
     perMessageDeflate: this.perMessageDeflate
   };
@@ -174,10 +170,10 @@ WS.prototype.write = function (packets) {
   var total = packets.length;
   for (var i = 0, l = total; i < l; i++) {
     (function (packet) {
-      parser.encodePacket(packet, self.supportsBinary, function (data) {
+      parser.encodePacket(packet, self.supportsBinary, function (data: any) {
         if (!self.usingBrowserWebSocket) {
           // always create a new object (GH-437)
-          var opts = {};
+          var opts: any = {};
           if (packet.options) {
             opts.compress = packet.options.compress;
           }
@@ -290,4 +286,8 @@ WS.prototype.uri = function () {
 
 WS.prototype.check = function () {
   return !!WebSocketImpl && !('__initialize' in WebSocketImpl && this.name === WS.prototype.name);
+};
+
+export {
+  WS,
 };

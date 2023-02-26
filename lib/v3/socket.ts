@@ -2,19 +2,14 @@
  * Module dependencies.
  */
 
-var transports = require('./transports/index');
-var Emitter = require('component-emitter');
-var debug = require('debug')('engine.io-client:socket');
-var index = require('indexof');
-var parser = require('engine.io-parser');
-var parseuri = require('parseuri');
-var parseqs = require('parseqs');
-
-/**
- * Module exports.
- */
-
-module.exports = Socket;
+import transports from "./transports/index.js";
+import Emitter from "./component-emitter";
+import debugModule from 'debug';
+var debug = debugModule("engine.io-client:socket");
+import parser from "./engine.io-parser";
+import parseuri from "parseuri";
+import parseqs from "parseqs";
+import { Transport } from "./transport";
 
 /**
  * Socket constructor.
@@ -25,7 +20,7 @@ module.exports = Socket;
  */
 
 function Socket (uri, opts) {
-  if (!(this instanceof Socket)) return new Socket(uri, opts);
+//  if (!(this instanceof Socket)) return new Socket(uri, opts);
 
   opts = opts || {};
 
@@ -143,9 +138,9 @@ Socket.protocol = parser.protocol; // this is an int
  */
 
 Socket.Socket = Socket;
-Socket.Transport = require('./transport');
-Socket.transports = require('./transports/index');
-Socket.parser = require('engine.io-parser');
+Socket.Transport = Transport;
+Socket.transports = transports;
+Socket.parser = parser;
 
 /**
  * Creates transport of the given type.
@@ -157,7 +152,7 @@ Socket.parser = require('engine.io-parser');
 
 Socket.prototype.createTransport = function (name) {
   debug('creating transport "%s"', name);
-  var query = clone(this.query);
+  var query: any = clone(this.query);
 
   // append engine.io protocol identifier
   query.EIO = parser.protocol;
@@ -333,7 +328,7 @@ Socket.prototype.probe = function (name) {
         });
       } else {
         debug('probe transport "%s" failed', name);
-        var err = new Error('probe error');
+        var err: any = new Error('probe error');
         err.transport = transport.name;
         self.emit('upgradeError', err);
       }
@@ -354,7 +349,7 @@ Socket.prototype.probe = function (name) {
 
   // Handle any error that happens while probing
   function onerror (err) {
-    var error = new Error('probe error: ' + err);
+    var error: any = new Error('probe error: ' + err);
     error.transport = transport.name;
 
     freezeTransport();
@@ -450,7 +445,7 @@ Socket.prototype.onPacket = function (packet) {
         break;
 
       case 'error':
-        var err = new Error('server error');
+        var err: any = new Error('server error');
         err.code = packet.data;
         this.onError(err);
         break;
@@ -740,7 +735,11 @@ Socket.prototype.onClose = function (reason, desc) {
 Socket.prototype.filterUpgrades = function (upgrades) {
   var filteredUpgrades = [];
   for (var i = 0, j = upgrades.length; i < j; i++) {
-    if (~index(this.transports, upgrades[i])) filteredUpgrades.push(upgrades[i]);
+    if (~this.transports.indexOf(upgrades[i])) filteredUpgrades.push(upgrades[i]);
   }
   return filteredUpgrades;
 };
+
+export {
+  Socket,
+}

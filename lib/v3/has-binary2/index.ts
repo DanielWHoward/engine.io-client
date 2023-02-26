@@ -13,12 +13,6 @@ const isView = (obj) => {
 };
 
 /**
- * Module exports.
- */
-
-module.exports = hasBinary;
-
-/**
  * Checks for binary data.
  *
  * Supports Buffer, ArrayBuffer, Blob and File.
@@ -27,7 +21,7 @@ module.exports = hasBinary;
  * @api public
  */
 
-function hasBinary (obj) {
+export default function hasBinary (obj, b=false) {
   if (!obj || typeof obj !== 'object') {
     return false;
   }

@@ -2,17 +2,11 @@
  * Module dependencies
  */
 
-var XMLHttpRequest = require('xmlhttprequest-ssl');
-var XHR = require('./polling-xhr');
-var JSONP = require('./polling-jsonp');
-var websocket = require('./websocket');
-
-/**
- * Export transports.
- */
-
-exports.polling = polling;
-exports.websocket = websocket;
+//import XMLHttpRequest from "xmlhttprequest-ssl";
+import XMLHttpRequest from "../xmlhttprequest";
+import XHR from "./polling-xhr";
+import { JSONPPolling as JSONP } from "./polling-jsonp";
+import { WS as websocket } from "./websocket";
 
 /**
  * Polling transport polymorphic constructor.
@@ -29,7 +23,7 @@ function polling (opts) {
 
   if (typeof location !== 'undefined') {
     var isSSL = 'https:' === location.protocol;
-    var port = location.port;
+    var port = parseInt(location.port);
 
     // some user agents have empty `location.port`
     if (!port) {
@@ -42,7 +36,7 @@ function polling (opts) {
 
   opts.xdomain = xd;
   opts.xscheme = xs;
-  xhr = new XMLHttpRequest(opts);
+  xhr = XMLHttpRequest(opts);
 
   if ('open' in xhr && !opts.forceJSONP) {
     return new XHR(opts);
@@ -51,3 +45,8 @@ function polling (opts) {
     return new JSONP(opts);
   }
 }
+
+export default {
+  polling,
+  websocket,
+};

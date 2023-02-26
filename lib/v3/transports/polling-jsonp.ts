@@ -2,14 +2,8 @@
  * Module requirements.
  */
 
-var Polling = require('./polling');
-var inherit = require('component-inherit');
-
-/**
- * Module exports.
- */
-
-module.exports = JSONPPolling;
+import Polling from "./polling";
+import inherit from '../component-inherit';
 
 /**
  * Cached regular expressions.
@@ -53,12 +47,13 @@ function JSONPPolling (opts) {
 
   // define global callbacks array if not present
   // we do this here (lazily) to avoid unneeded global pollution
+/*
   if (!callbacks) {
     // we need to consider multiple engines in the same page
     var global = glob();
     callbacks = global.___eio = (global.___eio || []);
   }
-
+*/
   // callback identifier
   this.index = callbacks.length;
 
@@ -236,4 +231,8 @@ JSONPPolling.prototype.doWrite = function (data, fn) {
   } else {
     this.iframe.onload = complete;
   }
+};
+
+export {
+  JSONPPolling,
 };

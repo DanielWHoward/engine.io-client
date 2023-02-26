@@ -1,5 +1,5 @@
 
-module.exports = require('./socket');
+import { Socket } from './socket';
 
 /**
  * Exports parser
@@ -7,4 +7,10 @@ module.exports = require('./socket');
  * @api public
  *
  */
-module.exports.parser = require('engine.io-parser');
+import parser from './engine.io-parser';
+
+export default {
+  protocol: parser.protocol,
+  Socket,
+  parser,
+};

@@ -1,13 +1,5 @@
 
 /**
- * Expose `Emitter`.
- */
-
-if (typeof module !== 'undefined') {
-  module.exports = Emitter;
-}
-
-/**
  * Initialize a new `Emitter`.
  *
  * @api public
@@ -111,6 +103,13 @@ Emitter.prototype.removeEventListener = function(event, fn){
       break;
     }
   }
+
+  // Remove event specific arrays for event types that no
+  // one is subscribed for to avoid memory leak.
+  if (callbacks.length === 0) {
+    delete this._callbacks['$' + event];
+  }
+
   return this;
 };
 
@@ -124,8 +123,12 @@ Emitter.prototype.removeEventListener = function(event, fn){
 
 Emitter.prototype.emit = function(event){
   this._callbacks = this._callbacks || {};
-  var args = [].slice.call(arguments, 1)
+  var args = new Array(arguments.length - 1)
     , callbacks = this._callbacks['$' + event];
+
+  for (var i = 1; i < arguments.length; i++) {
+    args[i - 1] = arguments[i];
+  }
 
   if (callbacks) {
     callbacks = callbacks.slice(0);
@@ -161,3 +164,47 @@ Emitter.prototype.listeners = function(event){
 Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
+
+/**
+ * Wrap the prototype-based class with a TypeScript class.
+ */
+
+class TypeScriptEmitter {
+  private emitter: any;
+
+  constructor(obj: any=null) {
+    this.emitter = Emitter(obj || this);
+  }
+
+  on(event, fn) {
+    return this.emitter.on(event, fn);
+  }
+
+  once(event, fn) {
+    return this.emitter.once(event, fn);
+  }
+
+  removeListener(event, fn) {
+    return this.emitter.removeListener(event, fn);
+  }
+
+  removeAllListeners(event=undefined, fn=undefined) {
+    return this.emitter.removeAllListeners(event, fn);
+  }
+
+  emit(event, data=undefined, desc=undefined) {
+    if (typeof desc !== 'undefined') {
+      return this.emitter.emit(event, data, desc);
+    }
+    if (typeof data !== 'undefined') {
+      return this.emitter.emit(event, data);
+    }
+    return this.emitter.emit(event);
+  }
+}
+
+export {
+  Emitter as default,
+  TypeScriptEmitter,
+  mixin,
+}

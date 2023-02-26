@@ -4,18 +4,13 @@
  * Module requirements.
  */
 
-var XMLHttpRequest = require('xmlhttprequest-ssl');
-var Polling = require('./polling');
-var Emitter = require('component-emitter');
-var inherit = require('component-inherit');
-var debug = require('debug')('engine.io-client:polling-xhr');
-
-/**
- * Module exports.
- */
-
-module.exports = XHR;
-module.exports.Request = Request;
+//import XMLHttpRequest from "xmlhttprequest-ssl";
+import XMLHttpRequest from "../xmlhttprequest";
+import Polling from "./polling";
+import Emitter from "../component-emitter";
+import inherit from '../component-inherit';
+import debugModule from 'debug';
+var debug = debugModule("engine.io-client:polling-xhr");
 
 /**
  * Empty function
@@ -37,7 +32,7 @@ function XHR (opts) {
 
   if (typeof location !== 'undefined') {
     var isSSL = 'https:' === location.protocol;
-    var port = location.port;
+    var port: any = location.port;
 
     // some user agents have empty `location.port`
     if (!port) {
@@ -180,7 +175,7 @@ Emitter(Request.prototype);
  */
 
 Request.prototype.create = function () {
-  var opts = { agent: this.agent, xdomain: this.xd, xscheme: this.xs, enablesXDR: this.enablesXDR };
+  var opts: any = { agent: this.agent, xdomain: this.xd, xscheme: this.xs, enablesXDR: this.enablesXDR };
 
   // SSL options for Node.js client
   opts.pfx = this.pfx;
@@ -191,7 +186,7 @@ Request.prototype.create = function () {
   opts.ciphers = this.ciphers;
   opts.rejectUnauthorized = this.rejectUnauthorized;
 
-  var xhr = this.xhr = new XMLHttpRequest(opts);
+  var xhr = this.xhr = XMLHttpRequest(opts);
   var self = this;
 
   try {
@@ -375,7 +370,7 @@ Request.prototype.onLoad = function () {
  */
 
 Request.prototype.hasXDR = function () {
-  return typeof XDomainRequest !== 'undefined' && !this.xs && this.enablesXDR;
+  return false;//typeof XDomainRequest !== 'undefined' && !this.xs && this.enablesXDR;
 };
 
 /**
@@ -398,9 +393,9 @@ Request.requestsCount = 0;
 Request.requests = {};
 
 if (typeof document !== 'undefined') {
-  if (typeof attachEvent === 'function') {
+  /*if (typeof attachEvent === 'function') {
     attachEvent('onunload', unloadHandler);
-  } else if (typeof addEventListener === 'function') {
+  } else */if (typeof addEventListener === 'function') {
     var terminationEvent = 'onpagehide' in self ? 'pagehide' : 'unload';
     addEventListener(terminationEvent, unloadHandler, false);
   }
@@ -409,7 +404,17 @@ if (typeof document !== 'undefined') {
 function unloadHandler () {
   for (var i in Request.requests) {
     if (Request.requests.hasOwnProperty(i)) {
-      Request.requests[i].abort();
+      var obj: any = Request.requests[i];
+      if (typeof obj !== 'undefined') {
+        if (typeof obj.abort !== 'undefined') {
+          obj.abort();
+        }
+      }
     }
   }
 }
+
+export {
+  XHR as default,
+  Request,
+};

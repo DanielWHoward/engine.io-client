@@ -2,21 +2,38 @@
  * Module dependencies.
  */
 
-var utf8 = require('./utf8');
-var hasBinary = require('has-binary2');
-var after = require('after');
-var keys = require('./keys');
+import utf8 from './utf8';
+import hasBinary from '../has-binary2';
+import after from '../after';
+import keys from './keys';
+
+class Buffer extends Uint8Array {
+  private encoding: string;
+  constructor(length:number, encoding:string='') {
+    super(length);
+    this.encoding = encoding;
+  }
+  static isBuffer(b: any) {
+    return b instanceof Uint8Array;
+  }
+  static concat(a: Array<any>) {
+    return [].concat.apply([], a);
+  }
+  writeUInt8(v: any, i: number) {
+    this[i] = v;
+  }
+}
 
 /**
  * Current protocol version.
  */
-exports.protocol = 3;
+const protocol = 3;
 
 /**
  * Packet types.
  */
 
-var packets = exports.packets = {
+var packets = {
     open:     0    // non-ws
   , close:    1    // non-ws
   , ping:     2
@@ -50,7 +67,7 @@ var err = { type: 'error', data: 'parser error' };
  * @api private
  */
 
-exports.encodePacket = function (packet, supportsBinary, utf8encode, callback) {
+const encodePacket = function (packet, supportsBinary, utf8encode, callback) {
   if (typeof supportsBinary === 'function') {
     callback = supportsBinary;
     supportsBinary = null;
@@ -84,7 +101,7 @@ exports.encodePacket = function (packet, supportsBinary, utf8encode, callback) {
 
 function encodeBuffer(packet, supportsBinary, callback) {
   if (!supportsBinary) {
-    return exports.encodeBase64Packet(packet, callback);
+    return encodeBase64Packet(packet, callback);
   }
 
   var data = packet.data;
@@ -100,7 +117,7 @@ function encodeBuffer(packet, supportsBinary, callback) {
  * @return {String} base64 encoded message
  */
 
-exports.encodeBase64Packet = function(packet, callback){
+const encodeBase64Packet = function(packet, callback){
   var data = Buffer.isBuffer(packet.data) ? packet.data : arrayBufferToBuffer(packet.data);
   var message = 'b' + packets[packet.type];
   message += data.toString('base64');
@@ -114,7 +131,7 @@ exports.encodeBase64Packet = function(packet, callback){
  * @api private
  */
 
-exports.decodePacket = function (data, binaryType, utf8decode) {
+const decodePacket = function (data, binaryType, utf8decode=false) {
   if (data === undefined) {
     return err;
   }
@@ -127,7 +144,7 @@ exports.decodePacket = function (data, binaryType, utf8decode) {
     type = data.charAt(0);
 
     if (type === 'b') {
-      return exports.decodeBase64Packet(data.substr(1), binaryType);
+      return decodeBase64Packet(data.substr(1), binaryType);
     }
 
     if (utf8decode) {
@@ -179,9 +196,9 @@ function tryDecode(data) {
  * @return {Object} with `type` and `data` (if any)
  */
 
-exports.decodeBase64Packet = function(msg, binaryType) {
+const decodeBase64Packet = function(msg, binaryType) {
   var type = packetslist[msg.charAt(0)];
-  var data = new Buffer(msg.substr(1), 'base64');
+  var data: any = new Buffer(msg.substr(1), 'base64');
   if (binaryType === 'arraybuffer') {
     var abv = new Uint8Array(data.length);
     for (var i = 0; i < abv.length; i++){
@@ -208,14 +225,14 @@ exports.decodeBase64Packet = function(msg, binaryType) {
  * @api private
  */
 
-exports.encodePayload = function (packets, supportsBinary, callback) {
+const encodePayload = function (packets, supportsBinary, callback) {
   if (typeof supportsBinary === 'function') {
     callback = supportsBinary;
     supportsBinary = null;
   }
 
   if (supportsBinary && hasBinary(packets)) {
-    return exports.encodePayloadAsBinary(packets, callback);
+    return encodePayloadAsBinary(packets, callback);
   }
 
   if (!packets.length) {
@@ -223,7 +240,7 @@ exports.encodePayload = function (packets, supportsBinary, callback) {
   }
 
   function encodeOne(packet, doneCallback) {
-    exports.encodePacket(packet, supportsBinary, false, function(message) {
+    encodePacket(packet, supportsBinary, false, function(message) {
       doneCallback(null, setLengthHeader(message));
     });
   }
@@ -261,9 +278,9 @@ function map(ary, each, done) {
  * @api public
  */
 
-exports.decodePayload = function (data, binaryType, callback) {
+const decodePayload = function (data, binaryType, callback) {
   if (typeof data !== 'string') {
-    return exports.decodePayloadAsBinary(data, binaryType, callback);
+    return decodePayloadAsBinary(data, binaryType, callback);
   }
 
   if (typeof binaryType === 'function') {
@@ -276,7 +293,7 @@ exports.decodePayload = function (data, binaryType, callback) {
     return callback(err, 0, 1);
   }
 
-  var length = '', n, msg, packet;
+  var length: any = '', n, msg, packet;
 
   for (var i = 0, l = data.length; i < l; i++) {
     var chr = data.charAt(i);
@@ -299,7 +316,7 @@ exports.decodePayload = function (data, binaryType, callback) {
     }
 
     if (msg.length) {
-      packet = exports.decodePacket(msg, binaryType, false);
+      packet = decodePacket(msg, binaryType, false);
 
       if (err.type === packet.type && err.data === packet.data) {
         // parser error in individual packet - ignoring payload
@@ -386,7 +403,7 @@ function arrayBufferToBuffer(data) {
  * @api private
  */
 
-exports.encodePayloadAsBinary = function (packets, callback) {
+const encodePayloadAsBinary = function (packets, callback) {
   if (!packets.length) {
     return callback(new Buffer(0));
   }
@@ -423,7 +440,7 @@ function encodeOneBinaryPacket(p, doneCallback) {
     doneCallback(null, Buffer.concat([sizeBuffer, packet]));
   }
 
-  exports.encodePacket(p, true, true, onBinaryPacketEncode);
+  encodePacket(p, true, true, onBinaryPacketEncode);
 
 }
 
@@ -437,7 +454,7 @@ function encodeOneBinaryPacket(p, doneCallback) {
  * @api public
  */
 
-exports.decodePayloadAsBinary = function (data, binaryType, callback) {
+const decodePayloadAsBinary = function (data, binaryType, callback) {
   if (typeof binaryType === 'function') {
     callback = binaryType;
     binaryType = null;
@@ -471,6 +488,19 @@ exports.decodePayloadAsBinary = function (data, binaryType, callback) {
   var total = buffers.length;
   for (i = 0; i < total; i++) {
     var buffer = buffers[i];
-    callback(exports.decodePacket(buffer, binaryType, true), i, total);
+    callback(decodePacket(buffer, binaryType, true), i, total);
   }
 };
+
+export default {
+  protocol,
+  packets,
+  encodePacket,
+  encodeBase64Packet,
+  decodePacket,
+  decodeBase64Packet,
+  encodePayload,
+  decodePayload,
+  encodePayloadAsBinary,
+  decodePayloadAsBinary,
+}

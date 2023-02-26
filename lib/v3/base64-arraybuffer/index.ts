@@ -46,5 +46,5 @@ var decode = function (base64) {
     return arraybuffer;
 };
 
-export { decode, encode };
+export default { decode, encode };
 //# sourceMappingURL=base64-arraybuffer.es5.js.map

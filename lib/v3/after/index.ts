@@ -1,6 +1,4 @@
-module.exports = after
-
-function after(count, callback, err_cb) {
+export default function after(count, callback, err_cb=noop) {
     var bail = false
     err_cb = err_cb || noop
     proxy.count = count
