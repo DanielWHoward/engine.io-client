@@ -213,6 +213,7 @@ Polling.prototype.uri = function () {
   var query = this.query || {};
   var schema = this.secure ? 'https' : 'http';
   var port = '';
+  var path = (typeof this.path === 'function') ? this.path() : this.path;
 
   // cache busting is forced
   if (false !== this.timestampRequests) {
@@ -237,7 +238,7 @@ Polling.prototype.uri = function () {
   }
 
   var ipv6 = this.hostname.indexOf(':') !== -1;
-  return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
+  return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + path + query;
 };
 
 export {

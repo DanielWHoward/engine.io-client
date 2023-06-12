@@ -249,6 +249,7 @@ WS.prototype.uri = function () {
   var query = this.query || {};
   var schema = this.secure ? 'wss' : 'ws';
   var port = '';
+  var path = (typeof this.path === 'function') ? this.path() : this.path;
 
   // avoid port if default for schema
   if (this.port && (('wss' === schema && Number(this.port) !== 443) ||
@@ -274,7 +275,7 @@ WS.prototype.uri = function () {
   }
 
   var ipv6 = this.hostname.indexOf(':') !== -1;
-  return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + this.path + query;
+  return schema + '://' + (ipv6 ? '[' + this.hostname + ']' : this.hostname) + port + path + query;
 };
 
 /**
