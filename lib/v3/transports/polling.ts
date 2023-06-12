@@ -141,7 +141,7 @@ Polling.prototype.onData = function (data) {
   };
 
   // decode payload
-  parser.decodePayload(data, this.socket.binaryType, callback);
+  self.decodePayload(data, this.socket.binaryType, callback);
 
   // if an event did not trigger closing
   if ('closed' !== this.readyState) {
@@ -183,6 +183,81 @@ Polling.prototype.doClose = function () {
 };
 
 /**
+ * Removes out of band data and decodes the clean payload.
+ *
+ * @param {Array} data packets
+ * @param {Object} typ type
+ * @param {Function} callback parser callback
+ * @api private
+ */
+
+Polling.prototype.decodePayload = function (data, binaryType, callback) {
+  var self = this;
+  var cleanData = '';
+  var outOfBand = '';
+  var matchPos = [];
+  if (typeof data === 'string') {
+    data = data.substring(data.startsWith('ok') ? 2 : 0);
+    // find packets
+    var pos = data.indexOf(':');
+    while (pos !== -1) {
+      if ((pos > 0) && (pos < (data.length - 1))
+          && (data[pos-1] >= '0') && (data[pos-1] <= '9')
+          && (data[pos+1] >= '0') && (data[pos+1] <= '9')) {
+        matchPos.push(pos);
+      }
+      pos = data.indexOf(':', pos + 1);
+    }
+    // separate packets from out of band data
+    var prev = 0;
+    var start = 0;
+    var end = 0;
+    var del = 0;
+    var len = 0;
+    var heur = 0;
+    for (var m=0; m < matchPos.length; ++m) {
+      start = matchPos[m] - del - 1;
+      end = start + 1;
+      while ((start >= 0) && (data[start] >= '0') && (data[start] <= '9')) {
+        len = parseInt(data.substring(start, end));
+        // heuristic to ignore extra outOfBand digit
+        heur = data.length;
+        if ((m + 1) < matchPos.length) {
+          heur = matchPos[m+1] - del - 1;
+        }
+        if ((end + len) >= heur) {
+          break;
+        }
+        --start;
+      }
+      ++start;
+      if ((start >= 2) && (data.substring(start - 2, start) === 'ok')) {
+        data = data.substring(0, start - 2) + data.substring(start);
+        del += 2;
+        start -= 2;
+      }
+      end = matchPos[m] - del;
+      len = parseInt(data.substring(start, end));
+      cleanData += data.substring(start, end+len+1);
+      outOfBand += data.substring(prev, start);
+      prev = end+len+1;
+    }
+    if (prev < data.length) {
+      outOfBand += data.substring(prev);
+    }
+    // decode packets
+    if (cleanData) {
+      parser.decodePayload(cleanData, binaryType, callback);
+    }
+    if (outOfBand) {
+      self.outOfBand(outOfBand);
+    }
+  } else if (data) {
+    parser.decodePayload(data, binaryType, callback);
+  }
+};
+
+/**
  * Writes a packets payload.
  *
  * @param {Array} data packets
@@ -198,15 +273,7 @@ Polling.prototype.write = function (packets) {
     self.onPacket(packet);
   };
   var callbackfn = function (data) {
-    data = data.substring(data.startsWith('ok')? 2: 0);
-    if (data.length) {
-      if ((typeof data !== 'string') || data.match(/^\d+:\d+\[/)) {
-        // decode payload
-        parser.decodePayload(data, self.socket.binaryType, callback);
-      } else {
-        self.outOfBand(data);
-      }
-    }
+    self.decodePayload(data, self.socket.binaryType, callback);
     self.writable = true;
     self.emit('drain');
   };
