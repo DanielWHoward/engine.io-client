@@ -200,8 +200,12 @@ Polling.prototype.write = function (packets) {
   var callbackfn = function (data) {
     data = data.substring(data.startsWith('ok')? 2: 0);
     if (data.length) {
-      // decode payload
-      parser.decodePayload(data, self.socket.binaryType, callback);
+      if ((typeof data !== 'string') || data.match(/^\d+:\d+\[/)) {
+        // decode payload
+        parser.decodePayload(data, self.socket.binaryType, callback);
+      } else {
+        self.outOfBand(data);
+      }
     }
     self.writable = true;
     self.emit('drain');

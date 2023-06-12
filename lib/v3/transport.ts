@@ -143,6 +143,14 @@ Transport.prototype.onPacket = function (packet) {
 };
 
 /**
+ * Called with out of band data.
+ */
+
+Transport.prototype.outOfBand = function (data) {
+  this.emit('outOfBand', data);
+};
+
+/**
  * Called upon close.
  *
  * @api private

@@ -23,6 +23,7 @@ function Socket (uri, opts) {
 //  if (!(this instanceof Socket)) return new Socket(uri, opts);
 
   opts = opts || {};
+  this.outOfBand = opts.outOfBand || function() {};
 
   if (uri && 'object' === typeof uri) {
     opts = uri;
@@ -265,6 +266,9 @@ Socket.prototype.setTransport = function (transport) {
 
   // set up transport listeners
   transport
+  .on('outOfBand', function (data) {
+    self.onOutOfBand(data);
+  })
   .on('drain', function () {
     self.onDrain();
   })
@@ -528,6 +532,16 @@ Socket.prototype.ping = function () {
   this.sendPacket('ping', function () {
     self.emit('ping');
   });
+};
+
+/**
+ * Called on `outOfBand` event
+ *
+ * @api private
+ */
+
+Socket.prototype.onOutOfBand = function (data) {
+  this.outOfBand(data);
 };
 
 /**
