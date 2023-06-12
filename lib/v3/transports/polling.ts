@@ -193,7 +193,16 @@ Polling.prototype.doClose = function () {
 Polling.prototype.write = function (packets) {
   var self = this;
   this.writable = false;
-  var callbackfn = function () {
+  var callback = function (packet, index, total) {
+    // handle the message
+    self.onPacket(packet);
+  };
+  var callbackfn = function (data) {
+    data = data.substring(data.startsWith('ok')? 2: 0);
+    if (data.length) {
+      // decode payload
+      parser.decodePayload(data, self.socket.binaryType, callback);
+    }
     self.writable = true;
     self.emit('drain');
   };

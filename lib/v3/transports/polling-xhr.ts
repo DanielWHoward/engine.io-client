@@ -101,7 +101,7 @@ XHR.prototype.doWrite = function (data, fn) {
   var isBinary = typeof data !== 'string' && data !== undefined;
   var req = this.request({ method: 'POST', data: data, isBinary: isBinary });
   var self = this;
-  req.on('success', fn);
+  req.on('data', fn);
   req.on('error', function (err) {
     self.onError('xhr post error', err);
   });
