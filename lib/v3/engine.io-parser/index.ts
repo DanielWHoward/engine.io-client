@@ -460,7 +460,7 @@ const decodePayloadAsBinary = function (data, binaryType, callback) {
     binaryType = null;
   }
 
-  var bufferTail = data;
+  var bufferTail = typeof data.length === 'undefined'? new Uint8Array(data): data;
   var buffers = [];
   var i;
 
@@ -480,8 +480,7 @@ const decodePayloadAsBinary = function (data, binaryType, callback) {
     var msgLength = parseInt(strLen, 10);
 
     var msg = bufferTail.slice(1, msgLength + 1);
-    if (isString) msg = bufferToString(msg);
-    buffers.push(msg);
+    buffers.push(isString? bufferToString(msg) : msg);
     bufferTail = bufferTail.slice(msgLength + 1);
   }
 
