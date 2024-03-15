@@ -1,6 +1,6 @@
 /*!
  * Engine.IO v6.1.1
- * (c) 2014-2023 Guillermo Rauch
+ * (c) 2014-2024 Guillermo Rauch
  * Released under the MIT License.
  */
 (function (global, factory) {
