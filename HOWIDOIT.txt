@@ -1,0 +1,29 @@
+The commands that I use
+
+$ nvm list
+        v8.17.0
+       v10.21.0
+       v12.18.1
+        v14.4.0
+->     v14.17.0
+       v16.18.1
+       v18.12.1
+       v18.14.0
+$ nvm use v14.17.0
+$ cd ../engine.io-client
+$ git checkout v3-v4-plus
+$ rm -rf build
+$ rm -rf dist
+$ npm run compile
+$ npm run build
+$ cd ../socket.io-client
+$ git checkout v3-v4-plus
+$ mv node_modules/engine.io-client/build node_modules/engine.io-client/build.1 (just once to save)
+$ mv node_modules/engine.io-client/dist node_modules/engine.io-client/dist.1 (just once to save)
+$ rm -rf node_modules/engine.io-client/build
+$ rm -rf node_modules/engine.io-client/dist
+$ cp -r ../engine.io-client/build node_modules/engine.io-client/.
+$ cp -r ../engine.io-client/dist node_modules/engine.io-client/.
+$ npm run compile
+$ npm run build
+compare ../socket.io-client/dist/socket.io.js to ../xibbit/client/angularjs/app/socketio/socket.io.js
